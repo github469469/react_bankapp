@@ -49,7 +49,7 @@ const login = (req,accno, pswd) => {
     var pswd1 = dataset[accno].password
     console.log(pswd1)
     if (pswd1 == pswd) {
-     req.session.currentUser = dataset[accno]
+     req.session.currentUser = dataset[accno].username
 
       return {
 
@@ -83,15 +83,9 @@ const login = (req,accno, pswd) => {
 
 }
 
-const deposit = (req,accno, amount, pswd) => {
-  if(!req.session.currentUser){
-    return {
-      status: false,
-      statusCode: 422,
-      message: "Please login"
-    }
-
-  }
+const deposit = (accno, amount, pswd) => {
+  
+  
   // console.log(amount)
   var amt = parseInt(amount);
   // console.log(amt+5);
@@ -138,14 +132,14 @@ const deposit = (req,accno, amount, pswd) => {
   }
 
 }
-const withdraw = (req,accno, amount, pswd) => {
-  if(!req.session.currentUser){
-    return {
-      status: false,
-      statusCode: 422,
-      message: "please login"
-    }
-  }
+const withdraw = (accno, amount, pswd) => {
+  // if(!req.session.currentUser){
+  //   return {
+  //     status: false,
+  //     statusCode: 422,
+  //     message: "please login"
+  //   }
+  // }
   var amt = parseInt(amount);
   let dataset = accountDetails;
   if (accno in dataset) {

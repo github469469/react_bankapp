@@ -16,12 +16,39 @@ app.use(session({
 
 }))
 
+const logMiddleware=(req,res,next)=>{
+    console.log(req.body);
+    next()
+
+}
+
+app.use(logMiddleware);
+
+    const authMiddleware=(req,res,next)=>{
+        if(!req.session.currentUser){
+            return res.json ({
+              status: false,
+              statusCode: 422,
+              message: "Please login"
+            })
+        
+          }
+          else{
+
+            next()
+          }
+
+
+
+
+    }
+
 // const app = express();
-app.use((req,res,next)=>{
-console.log("middleware")
-next()
+// app.use((req,res,next)=>{
+// console.log("middleware")
+// next()
  
-})
+// })
 app.use(express.json());
 
 app.get('/',(req,res)=>{
@@ -35,27 +62,27 @@ app.post('/',(req,res)=>{
 })
 
 app.post('/register',(req,res)=>{
-    console.log(req.body);
+    // console.log(req.body);
     const result = dataService.register(req.body.accno,req.body.username,req.body.password)
     // console.log(res.send(result.message));
     // res.status(result.statusCode)
     console.log(res.status(result.statusCode).json(result));
 })
 app.post('/login',(req,res)=>{
-    console.log(req.body);
+    // console.log(req.body);
     const result = dataService.login(req,req.body.accno,req.body.pswd)
     // console.log(res.send(result.message));
     console.log(res.status(result.statusCode).json(result));
 })
-app.post('/deposit',(req,res)=>{
-    console.log(req.session.currentUser);
-    const result = dataService.deposit(req,req.body.accno,req.body.amount,req.body.pswd)
+app.post('/deposit', authMiddleware,(req,res)=>{      //using middle ware
+    // console.log(req.session.currentUser);          //session api datasharing
+    const result = dataService.deposit(req.body.accno,req.body.amount,req.body.pswd)
     // console.log(res.send(result.message));
     console.log(res.status(result.statusCode).json(result));
 })
-app.post('/withdraw',(req,res)=>{
-    console.log(req.session.currentUser);
-    const result = dataService.withdraw(req,req.body.accno,req.body.amount,req.body.pswd)
+app.post('/withdraw', authMiddleware,(req,res)=>{
+    // console.log(req.session.currentUser);            
+    const result = dataService.withdraw(req.body.accno,req.body.amount,req.body.pswd)
     // console.log(res.send(result.message));
     console.log(res.status(result.statusCode).json(result));
 })
