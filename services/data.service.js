@@ -1,3 +1,5 @@
+const db = require('./db')
+
 let accountDetails = {
   1000: { accno: 1000, username: "userone", balance: 5000, password: "user1" },
   1001: { accno: 1001, username: "usertwo", balance: 3000, password: "user2" },
@@ -6,18 +8,61 @@ let accountDetails = {
   1004: { accno: 1004, username: "userfive", balance: 3000, password: "user5" }
 
 }
+
+let currentUser;
+
 const register = (accno, username, password) => {
+  // console.log("register called");
 
-  console.log("register called");
 
+  return db.User.findOne({accno}).then(user => {
+    // console.log(user);
+    if (user) {
+      return {
+        status: false,
+        statusCode: 422,
+        message: "user already exists"
+
+      }
+
+
+
+
+    }
+    else {
+      const newUser = new db.User({
+
+        accno,
+        balance: 0,
+        username,
+        password
+
+
+
+      });
+      newUser.save();
+      return {
+
+
+        status: true,
+        statusCode: 200,
+        message: "registration successful"
+
+      }
+
+
+    }
+
+  })
+  
   if (accno in accountDetails) {
     return {
-      status: true,
+      status: false,
       statusCode: 422,
- message: "user already exists"
+      message: "user already exists"
 
-}
-    
+    }
+
   }
   else {
     accountDetails[accno] = {
@@ -31,8 +76,8 @@ const register = (accno, username, password) => {
     //   this.saveDetaials();
     console.log(accountDetails);
     return {
-           status: true,
-           statusCode: 200,
+      status: true,
+      statusCode: 200,
       message: "registration successful"
 
     }
@@ -40,52 +85,85 @@ const register = (accno, username, password) => {
   }
 }
 
-const login = (req,accno, pswd) => {
-  // console.log(accno)
-  // console.log(pswd)
-  let dataset = accountDetails;
-  if (accno in dataset) {
+const login = (req, accno, pswd) => {
 
-    var pswd1 = dataset[accno].password
-    console.log(pswd1)
-    if (pswd1 == pswd) {
-     req.session.currentUser = dataset[accno].username
+  var acno = parseInt(accno);
+  return db.User.findOne({
 
+    accno,
+    password:pswd
+
+
+  }).then(user=>{
+
+     if(user){
+
+      req.session.currentUser=user
       return {
 
-        // alert("login successful");
-
-        // this.saveDetaials();
         status: true,
-        statusCode:200,
+        statusCode: 200,
         message: "login successful"
 
       }
-    }
-    return {
-
-      statusCode: 422,
-      status: false,
-      message: "incorrect password"
-
 
     }
+      return {
+        
+        status: false,
+        statusCode: 422,
+        message: "invalid credentials"
+  
+         }
+    })
+
+
+
+  // console.log(accno)
+  // console.log(pswd)
+  // let dataset = accountDetails;
+  // if (accno in dataset) {
+
+  //   var pswd1 = dataset[accno].password
+  //   console.log(pswd1)
+  //   if (pswd1 == pswd) {
+  //     req.session.currentUser = dataset[accno].username
+
+  //     return {
+
+  //       // alert("login successful");
+
+  //       // this.saveDetaials();
+  //       status: true,
+  //       statusCode: 200,
+  //       message: "login successful"
+
+  //     }
+  //   }
+  //   return {
+
+  //     statusCode: 422,
+  //     status: false,
+  //     message: "incorrect password"
+
+
+  //   }
+  // }
+  // return {
+
+  //   statusCode: 422,
+  //   status: false,
+  //   message: "no user is exist provide account number "
+
+
+  // }
+
+
   }
-  return {
-
-    statusCode: 422,
-    status: false,
-    message: "no user is exist provide account number "
-
-
-  }
-
-
-}
 
 const deposit = (accno, amount, pswd) => {
-  
-  
+
+
   // console.log(amount)
   var amt = parseInt(amount);
   // console.log(amt+5);
@@ -155,7 +233,7 @@ const withdraw = (accno, amount, pswd) => {
 
         }
       }
-    else {
+      else {
         dataset[accno].balance -= amt
         // this.saveDetaials();
 
@@ -165,12 +243,12 @@ const withdraw = (accno, amount, pswd) => {
           status: true,
           statusCode: 200,
           message: "Account debited",
-          balance:dataset[accno].balance 
+          balance: dataset[accno].balance
         }
       }
     }
-  
-  else {
+
+    else {
       return {
         status: false,
         statusCode: 422,
@@ -180,7 +258,7 @@ const withdraw = (accno, amount, pswd) => {
 
     }
   }
-else {
+  else {
     return {
       status: false,
       statusCode: 422,
