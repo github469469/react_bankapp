@@ -55,34 +55,34 @@ const register = (accno, username, password) => {
 
   })
   
-  if (accno in accountDetails) {
-    return {
-      status: false,
-      statusCode: 422,
-      message: "user already exists"
+  // if (accno in accountDetails) {
+  //   return {
+  //     status: false,
+  //     statusCode: 422,
+  //     message: "user already exists"
 
-    }
+  //   }
 
-  }
-  else {
-    accountDetails[accno] = {
-      accno,
-      balance: 0,
-      username,
-      password
+  // }
+  // else {
+  //   accountDetails[accno] = {
+  //     accno,
+  //     balance: 0,
+  //     username,
+  //     password
 
 
-    }
-    //   this.saveDetaials();
-    console.log(accountDetails);
-    return {
-      status: true,
-      statusCode: 200,
-      message: "registration successful"
+  //   }
+  //   //   this.saveDetaials();
+  //   console.log(accountDetails);
+  //   return {
+  //     status: true,
+  //     statusCode: 200,
+  //     message: "registration successful"
 
-    }
+  //   }
 
-  }
+  // }
 }
 
 const login = (req, accno, pswd) => {
@@ -103,7 +103,8 @@ const login = (req, accno, pswd) => {
 
         status: true,
         statusCode: 200,
-        message: "login successful"
+        message: "login successful",
+        name: user.username
 
       }
 
@@ -163,51 +164,84 @@ const login = (req, accno, pswd) => {
 
 const deposit = (accno, amount, pswd) => {
 
-
-  // console.log(amount)
   var amt = parseInt(amount);
+    return db.User.findOne({
+
+      accno,
+      password:pswd
+   
+    }).then(user=>{
+
+        if(!user){
+          return {
+            // alert("no user exist with provided Account number")
+            status: false,
+            statusCode: 422,
+            message: "no user exist with provided account number"
+          }
+       }
+       
+
+
+
+
+
+          user.balance+=amt;
+          user.save();
+          return {
+
+            status: true,
+            statusCode: 200,
+            message: "Account has been credited",
+            balance: user.balance
+          }
+
+
+    })
+  // console.log(amount)
+  
   // console.log(amt+5);
 
-  let dataset = accountDetails;
-  if (accno in dataset) {
+  // let dataset = accountDetails;
+  // if (accno in dataset) {
 
-    var pswd1 = dataset[accno].password
-    // console.log(pswd1)
-    if (pswd1 == pswd) {
-      dataset[accno].balance += amt
-      // this.saveDetaials();
-      // console.log(dataset[accno].balance);
+  //   var pswd1 = dataset[accno].password
+  //   // console.log(pswd1)
+  //   if (pswd1 == pswd) {
+  //     dataset[accno].balance += amt
+  //     // this.saveDetaials();
+  //     // console.log(dataset[accno].balance);
 
-      // alert("Account credited with amount:" + amount+" New balance is :" + dataset[accno].balance);
+  //     // alert("Account credited with amount:" + amount+" New balance is :" + dataset[accno].balance);
 
-      return {
+  //     return {
 
-        status: true,
-        statusCode: 200,
-        message: "Account has been credited",
-        balance: dataset[accno].balance
-      }
-    }
-    else {
-      return {
-        status: false,
-        statusCode: 422,
-        message: "incorrect password"
-      }
-      // alert("incorrect password")
+  //       status: true,
+  //       statusCode: 200,
+  //       message: "Account has been credited",
+  //       balance: dataset[accno].balance
+  //     }
+  //   }
+  //   else {
+  //     return {
+  //       status: false,
+  //       statusCode: 422,
+  //       message: "incorrect password"
+  //     }
+  //     // alert("incorrect password")
 
-      // balance:dataset[accno].balance
+  //     // balance:dataset[accno].balance
 
-    }
-  }
-  else {
-    return {
-      // alert("no user exist with provided Account number")
-      status: false,
-      statusCode: 422,
-      message: "no user exist with provided account number"
-    }
-  }
+  //   }
+  // }
+  // else {
+  //   return {
+  //     // alert("no user exist with provided Account number")
+  //     status: false,
+  //     statusCode: 422,
+  //     message: "no user exist with provided account number"
+  //   }
+  // }
 
 }
 const withdraw = (accno, amount, pswd) => {
@@ -219,54 +253,110 @@ const withdraw = (accno, amount, pswd) => {
   //   }
   // }
   var amt = parseInt(amount);
-  let dataset = accountDetails;
-  if (accno in dataset) {
+  return db.User.findOne({
 
-    var pswd1 = dataset[accno].password
-    // console.log(pswd1)
-    if (pswd1 == pswd) {
-      if (amount > dataset[accno].amount) {
+    accno,
+    password:pswd
+
+
+
+  }).then(user=>{
+      if(!user){
         return {
           status: false,
           statusCode: 422,
-          message: "insufficient balance"
-
+          message: "no user exist with provided Account number"
         }
       }
-      else {
-        dataset[accno].balance -= amt
-        // this.saveDetaials();
+    if(user.balance<amt){
 
-        // alert("Account credited with amount:" + amount+" New balance is :" + dataset[accno].balance);
-
-        return {
-          status: true,
-          statusCode: 200,
-          message: "Account debited",
-          balance: dataset[accno].balance
-        }
-      }
-    }
-
-    else {
       return {
         status: false,
         statusCode: 422,
-        message: "incorrect password"
+        message: "insufficient balance"
 
       }
-
     }
-  }
-  else {
+    user.balance-=amt;
+    user.save();
+
     return {
-      status: false,
-      statusCode: 422,
-      message: "no user exist with provided Account number"
+      status: true,
+      statusCode: 200,
+      message: "Account debited",
+      balance: user.balance
     }
 
-  }
-}
+
+
+
+    })
+    
+    
+    
+    
+    
+    
+    
+    }
+
+
+
+
+
+
+
+
+
+
+//   let dataset = accountDetails;
+//   if (accno in dataset) {
+
+//     var pswd1 = dataset[accno].password
+//     // console.log(pswd1)
+//     if (pswd1 == pswd) {
+//       if (amount > dataset[accno].amount) {
+//         return {
+//           status: false,
+//           statusCode: 422,
+//           message: "insufficient balance"
+
+//         }
+//       }
+//       else {
+//         dataset[accno].balance -= amt
+//         // this.saveDetaials();
+
+//         // alert("Account credited with amount:" + amount+" New balance is :" + dataset[accno].balance);
+
+//         return {
+//           status: true,
+//           statusCode: 200,
+//           message: "Account debited",
+//           balance: dataset[accno].balance
+//         }
+//       }
+//     }
+
+//     else {
+//       return {
+//         status: false,
+//         statusCode: 422,
+//         message: "incorrect password"
+
+//       }
+
+//     }
+//   }
+//   else {
+//     return {
+//       status: false,
+//       statusCode: 422,
+//       message: "no user exist with provided Account number"
+//     }
+
+//   }
+// }
 
 
 

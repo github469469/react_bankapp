@@ -4,9 +4,18 @@ const express = require('express');
 
 const session = require('express-session');
 
+const cors = require('cors');
+
 const app = express();
 
 const dataService = require('./services/data.service')
+
+app.use(cors({
+    origin:"http://localhost:4200",
+    credentials:true
+
+
+}))
 
 app.use(session({
 
@@ -83,17 +92,25 @@ app.post('/login', (req, res) => {
 })
 app.post('/deposit', authMiddleware, (req, res) => {      //using middle ware
     // console.log(req.session.currentUser);          //session api datasharing
-    const result = dataService.deposit(req.body.accno, req.body.amount, req.body.pswd)
+            dataService.deposit(req.body.accno, req.body.amount, req.body.pswd)
     // console.log(res.send(result.message));
-    console.log(res.status(result.statusCode).json(result));
+    .then(result => {
+            res.status(result.statusCode).json(result)
+})
+
 })
 app.post('/withdraw', authMiddleware, (req, res) => {
     // console.log(req.session.currentUser);            
-    const result = dataService.withdraw(req.body.accno, req.body.amount, req.body.pswd)
+ dataService.withdraw(req.body.accno, req.body.amount, req.body.pswd)
     // console.log(res.send(result.message));
-    console.log(res.status(result.statusCode).json(result));
+    .then(result => {
+    res.status(result.statusCode).json(result)
+
+
 })
 
+
+})
 
 
 app.put('/', (req, res) => {
