@@ -15,7 +15,7 @@ const register = (accno, username, password) => {
   // console.log("register called");
 
 
-  return db.User.findOne({accno}).then(user => {
+  return db.User.findOne({ accno }).then(user => {
     // console.log(user);
     if (user) {
       return {
@@ -54,7 +54,7 @@ const register = (accno, username, password) => {
     }
 
   })
-  
+
   // if (accno in accountDetails) {
   //   return {
   //     status: false,
@@ -91,32 +91,32 @@ const login = (req, accno, pswd) => {
   return db.User.findOne({
 
     accno,
-    password:pswd
+    password: pswd
 
 
-  }).then(user=>{
+  }).then(user => {
 
-     if(user){
+    if (user) {
 
-      req.session.currentUser=user
+      req.session.currentUser = user.accno
       return {
 
         status: true,
         statusCode: 200,
         message: "login successful",
-        name: user.username
-
+        name: user.username,
+        accno: user.accno
       }
 
     }
-      return {
-        
-        status: false,
-        statusCode: 422,
-        message: "invalid credentials"
-  
-         }
-    })
+    return {
+
+      status: false,
+      statusCode: 422,
+      message: "invalid credentials"
+
+    }
+  })
 
 
 
@@ -160,46 +160,46 @@ const login = (req, accno, pswd) => {
   // }
 
 
-  }
+}
 
 const deposit = (accno, amount, pswd) => {
 
   var amt = parseInt(amount);
-    return db.User.findOne({
+  return db.User.findOne({
 
-      accno,
-      password:pswd
-   
-    }).then(user=>{
+    accno,
+    password: pswd
 
-        if(!user){
-          return {
-            // alert("no user exist with provided Account number")
-            status: false,
-            statusCode: 422,
-            message: "no user exist with provided account number"
-          }
-       }
-       
+  }).then(user => {
 
+    if (!user) {
+      return {
+        // alert("no user exist with provided Account number")
+        status: false,
+        statusCode: 422,
+        message: "no user exist with provided account number"
+      }
+    }
 
 
 
 
-          user.balance+=amt;
-          user.save();
-          return {
-
-            status: true,
-            statusCode: 200,
-            message: "Account has been credited",
-            balance: user.balance
-          }
 
 
-    })
+    user.balance += amt;
+    user.save();
+    return {
+
+      status: true,
+      statusCode: 200,
+      message: "Account has been credited",
+      balance: user.balance
+    }
+
+
+  })
   // console.log(amount)
-  
+
   // console.log(amt+5);
 
   // let dataset = accountDetails;
@@ -244,7 +244,7 @@ const deposit = (accno, amount, pswd) => {
   // }
 
 }
-const withdraw = (accno, amount, pswd) => {
+const withdraw = (req, accno, amount, pswd) => {
   // if(!req.session.currentUser){
   //   return {
   //     status: false,
@@ -256,19 +256,28 @@ const withdraw = (accno, amount, pswd) => {
   return db.User.findOne({
 
     accno,
-    password:pswd
+    password: pswd
 
 
 
-  }).then(user=>{
-      if(!user){
-        return {
-          status: false,
-          statusCode: 422,
-          message: "no user exist with provided Account number"
-        }
+  }).then(user => {
+    if (!user) {
+      return {
+        status: false,
+        statusCode: 422,
+        message: "no user exist with provided Account number"
       }
-    if(user.balance<amt){
+    }
+    if (req.session.currentUser != accno) {
+      return {
+        status: false,
+        statusCode: 422,
+        message: "permission denied"
+
+      }
+    }
+
+    if (user.balance < amt) {
 
       return {
         status: false,
@@ -277,7 +286,7 @@ const withdraw = (accno, amount, pswd) => {
 
       }
     }
-    user.balance-=amt;
+    user.balance -= amt;
     user.save();
 
     return {
@@ -290,15 +299,44 @@ const withdraw = (accno, amount, pswd) => {
 
 
 
-    })
-    
-    
-    
-    
-    
-    
-    
+  })
+
+
+
+
+
+
+
+}
+
+const deleteAccDetails = (acno) => {
+  return db.User.deleteOne({
+
+    accno:acno
+
+  }).then(user => {
+    if (!user) {
+      return {
+        status: false,
+        statusCode: 422,
+        message: "Operation failed"
+
+      }
+
+
+
     }
+    return {
+      status: true,
+      statusCode: 200,
+      message: "Account Number " + acno + "deleted successfully"
+
+    }
+
+
+  })
+
+}
 
 
 
@@ -365,6 +403,7 @@ module.exports = {
   register,
   login,
   deposit,
-  withdraw
+  withdraw,
+  deleteAccDetails
 }
 

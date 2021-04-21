@@ -11,7 +11,7 @@ const app = express();
 const dataService = require('./services/data.service')
 
 app.use(cors({
-    origin:"http://localhost:4200",
+    origin:'http://localhost:4200',
     credentials:true
 
 
@@ -101,7 +101,7 @@ app.post('/deposit', authMiddleware, (req, res) => {      //using middle ware
 })
 app.post('/withdraw', authMiddleware, (req, res) => {
     // console.log(req.session.currentUser);            
- dataService.withdraw(req.body.accno, req.body.amount, req.body.pswd)
+ dataService.withdraw(req,req.body.accno, req.body.amount, req.body.pswd)
     // console.log(res.send(result.message));
     .then(result => {
     res.status(result.statusCode).json(result)
@@ -111,7 +111,12 @@ app.post('/withdraw', authMiddleware, (req, res) => {
 
 
 })
-
+app.delete('/deleteAccDetails/:accno',authMiddleware, (req, res) => {
+    dataService.deleteAccDetails(req.params.accno)
+    .then(result => {
+        res.status(result.statusCode).json(result)
+})
+})
 
 app.put('/', (req, res) => {
 
@@ -122,11 +127,11 @@ app.patch('/', (req, res) => {
 
     res.send("PATCH METHOD")
 })
-
 app.delete('/', (req, res) => {
 
     res.send("DELETE METHOD")
 })
+
 
 app.listen(3000, () => {
     console.log("server started at port 3000");
