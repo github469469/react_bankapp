@@ -11,7 +11,7 @@ const app = express();
 const dataService = require('./services/data.service')
 
 app.use(cors({
-    origin:'http://localhost:4200',
+    origin:'http://localhost:3000',
     credentials:true
 
 
@@ -83,7 +83,7 @@ app.post('/register', (req, res) => {
 })
 app.post('/login', (req, res) => {
     // console.log(req.body);
-    dataService.login(req, req.body.accno, req.body.pswd)
+    dataService.login(req, req.body.accno, req.body.password)
         // console.log(res.send(result.message));
         .then(result => {
 
@@ -133,7 +133,7 @@ app.delete('/', (req, res) => {
 })
 
 
-app.listen(3000, () => {
+app.listen(8000, () => {
     console.log("server started at port 3000");
 })
 
